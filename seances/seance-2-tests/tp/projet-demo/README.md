@@ -9,9 +9,9 @@ Vous travaillez normalement sur **votre** API de la séance 1. Ce projet sert de
 rendu n'est pas terminé ou n'est pas conforme, et de référence pour comparer : si un test du TP 2
 échoue chez vous et passe ici, la différence est dans votre code, pas dans le test.
 
-Il n'y a **aucun test dans ce dossier** : c'est vous qui les écrivez, à partir de l'étape 0 du
-TP. Vous y trouverez aussi, volontairement, les deux compteurs globaux `_next_id` que l'étape 1.2
-vous demande de supprimer.
+Les tests de contrat et les tests unitaires sont dans `tests/`. Les routers et schémas sont
+repris du projet de la séance 1 ; `/health` conserve le contrat de cette séance. Les identifiants
+sont calculés à partir du stockage, qui est vidé avant et après chaque test.
 
 ## Arborescence
 
@@ -46,5 +46,32 @@ interactive est disponible sur [http://localhost:8000/docs](http://localhost:800
 deux ressources `items` et `reservations`.
 
 Le montage de volume et `--reload` sont réservés au développement : le code est rechargé à chaque
-sauvegarde sans reconstruction de l'image. L'étape 0 du TP vous fera ajouter `tests/` et
-`pytest.ini` au `Dockerfile` et au `docker-compose.yml`.
+sauvegarde sans reconstruction de l'image. `tests/` et `pytest.ini` sont copiés dans l'image et montés dans le conteneur de développement.
+
+## Lancer les tests
+
+Depuis `projet-demo/`, dans le conteneur :
+
+```bash
+docker compose build api
+docker compose run --rm api pytest -v
+docker compose run --rm api pytest --cov=app --cov-branch --cov-report=term-missing
+```
+
+Ou localement sous PowerShell :
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe -m pytest -v
+.\.venv\Scripts\python.exe -m pytest --cov=app --cov-branch --cov-report=term-missing
+```
+
+- `tests/conftest.py` : fixtures `storage`, `client`, `item_velo`, `reservation_active`.
+- `tests/test_health.py` : contrat de santé.
+- `tests/test_items.py` : CRUD, validation, champs inconnus, filtres, pagination et absence d'effets de bord après rejet.
+- `tests/test_reservations.py` : création, lecture, filtre, limite, dates, annulation, erreurs 404 et conflit 409.
+- `tests/test_schemas.py` : validation croisée des dates et distinction entre champ absent et `description=null`.
+
+Les tests utilisent `TestClient`, sans serveur HTTP. Le stockage réel est remis à zéro pour chaque test.
+Conformément au contrat de la séance 1, une réservation ne vérifie pas l'existence de l'item.
