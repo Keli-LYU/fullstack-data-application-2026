@@ -1,0 +1,1 @@
+Je retiens la conservation de l'historique : fermer un compte ne doit effacer ni les prêts réalisés sur son matériel, ni ses propres emprunts. Les réservations actives doivent être traitées avant la fermeture du compte.
